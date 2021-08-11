@@ -1,0 +1,272 @@
+
+    <div class="container">
+        <div class="header">
+            <div :class="[{'logowechat': orderData.pay_type == 'wechat', 'logo': orderData.pay_type == 'alipay'}]"></div>
+        </div>
+        <div class="mainbody">
+            <div class="realprice">￥{{orderData.pay_price}}</div> 
+            <div class="discountprice" v-show="orderData.price != orderData.pay_price"><del>原价:￥{{orderData.price}}</del>，随机立减:￥{{ Math.floor((orderData.price - orderData.pay_price) * 100) / 100 }}</div>
+            <div class="qrcode" >
+                <div id="img" class="image"></div>
+                <div :class="['logo',{'logologo-alipay': orderData.pay_type == 'alipay','hidden-xs':true}]"></div>
+                <div :class="['expired',{'hidden': expired == true}]"></div>
+                <div :class="['paid', {'hidden': pay_ok == false}]"></div>
+            </div>
+            <div class="remainseconds">
+                <div class="time minutes">
+                    <b>{{minutes}}</b>
+                    <em>分</em>
+                </div>
+                <div class="colon">:</div>
+                <div class="time seconds">
+                    <b>{{seconds}}</b>
+                    <em>秒</em>
+                </div>
+            </div>
+
+            <div class="tips">
+                <div v-if="device == 'mobile'">
+                    <div v-if="orderData.pay_type != 'alipay'">
+                        <div v-if="isWeixin == true">请长按二维码进行支付</div>
+                        <div v-else>请截屏后打开{{orderData.pay_type != 'alipay' ?'微信' : '支付宝'}},从相册选择二维码图片</div>
+                    </div>
+                    <div v-else>
+                         <div v-if="isWeixin == false">请截屏后，打开{{orderData.pay_type != 'alipay' ?'微信' : '支付宝'}}，从相册选择二维码图片</div>
+                         <div v-else>
+                             <a :href="orderData.pay_url" class="btn btn-info btn-lg">启动{{orderData.pay_type != 'alipay' ?'微信' : '支付宝'}}进行支付</a>
+                         </div>
+                    </div>
+                </div>
+                <div v-else>
+                    打开{{orderData.pay_type != 'alipay' ?'微信' : '支付宝'}}「扫一扫」
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<style>
+
+html,
+body {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #f4f6f8;
+  font-size: 14px;
+  color: #616161;
+}
+.container {
+  max-width: 650px;
+  margin: 0 auto;
+}
+.header {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  height: 60px;
+  padding-top: 12px;
+  text-align: center;
+  margin-bottom: 15px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+}
+.header .logo {
+  width: 103px;
+  height: 36px;
+  margin: 0 auto;
+  background: url(./images/alipay.png) no-repeat;
+  background-size: cover;
+}
+
+.header .logo.alipay {
+  width: 103px;
+  height: 36px;
+  margin: 0 auto;
+  background-image: url(./images/alipay.png);
+  background-size: cover;
+}
+.header .logowechat {
+  width: 103px;
+  height: 36px;
+  margin: 0 auto;
+  width: 130px;
+  background-image: url(./images/wechat.png);
+  background-size: cover;
+}
+.mainbody {
+  margin: 0 auto;
+  margin-top: 15px;
+  padding-bottom: 10px;
+  text-align: center;
+  color: #333;
+  padding-top: 6px;
+  background: #fff url(./images/wave.png) top center repeat-x;
+  background-size: auto 6px;
+  min-height: 400px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+}
+.realprice {
+  font-size: 46px;
+  margin-top: 15px;
+}
+.discountprice {
+  color: #ff6600;
+  margin-bottom: 10px;
+}
+.qrcode {
+  width: 250px;
+  height: 250px;
+  margin: 0 auto;
+  position: relative;
+}
+.qrcode img {
+  width: 100%;
+  height: 100%;
+}
+.qrcode .logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 30px;
+  width: 30px;
+  margin-left: -15px;
+  margin-top: -15px;
+  background: #fff url("./images/logo-wechat.png") no-repeat center center;
+  background-size: cover;
+  border-radius: 3px;
+}
+.qrcode .logologo-alipay {
+  background-image: url("./images/logo-alipay.png");
+}
+.qrcode .expired {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  opacity: .95;
+  background: #fff url(./images/expired.png) center center no-repeat;
+}
+.qrcode .paid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  opacity: .95;
+  background: #fff url(./images/paid.png) center center no-repeat;
+}
+.warning {
+  color: #f00;
+}
+.success {
+  color: #05af19;
+}
+.remainseconds {
+  width: 200px;
+  margin: 0 auto;
+  height: 100px;
+  padding: 10px 35px;
+  text-align: center;
+}
+.remainseconds .time {
+  width: 55px;
+  height: 90px;
+}
+.remainseconds .time b {
+  font-size: 40px;
+  font-weight: 300;
+}
+.remainseconds .time b,
+.remainseconds .time em {
+  display: block;
+}
+.remainseconds .time em {
+  font-style: normal;
+  color: #888;
+}
+@media (max-width: 375px) {
+  .container {
+    padding: 0;
+  }
+  .remainseconds {
+    padding: 0 35px 10px 35px;
+    height: 80px;
+  }
+  .remainseconds .time {
+    height: 100%;
+  }
+  .remainseconds .time b {
+    font-size: 36px;
+  }
+}
+@media (max-width: 320px) {
+  .remainseconds {
+    padding: 0 35px 10px 35px;
+    height: 87px;
+  }
+  .remainseconds .time {
+    height: 100%;
+  }
+  .remainseconds .time b {
+    font-size: 36px;
+  }
+  .container {
+    padding: 0;
+  }
+  .qrcode {
+    width: 200px;
+    height: 200px;
+  }
+  .realprice {
+    font-size: 36px;
+  }
+}
+.minutes {
+  float: left;
+}
+.seconds {
+  float: left;
+}
+.colon {
+  float: left;
+  width: 20px;
+  font-size: 30px;
+  line-height: 50px;
+  font-family: Vernada, 'Microsoft Yahei';
+}
+.tips {
+  border-top: 1px dotted #eee;
+  background: #fff;
+  padding: 15px 0;
+  line-height: 25px;
+  overflow: hidden;
+  display: block;
+  clear: both;
+}
+.help {
+  line-height: 25px;
+  padding: 15px 0;
+  text-align: center;
+  font-size: 14px;
+}
+.footer {
+  height: 60px;
+  line-height: 60px;
+  text-align: center;
+  font-size: 12px;
+}
+
+#img>img{
+  width: 100% !important;
+}
+
+</style>
+
+
+
